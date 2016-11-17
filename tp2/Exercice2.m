@@ -1,4 +1,4 @@
-%% Exercice 2: Compteur de monnaie
+%% Exercice 2: Compteur1 de monnaie
 type binariser.m
 type Compter_Monnaie.m
 % Numéro 1
