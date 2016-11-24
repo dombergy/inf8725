@@ -1,8 +1,6 @@
 function segImg = Segmenter_Couleur(img,LUT_R,LUT_G,LUT_B)
     % Extraire chaque couleur separement
-    R = img(:,:,1);
-    G = img(:,:,2);
-    B = img(:,:,3);
+    [R,G,B] = Split_Couleurs(img);
     
     % Creer de nouvelles composantes selon les LUT transmises
     R_seg = intlut(R,LUT_R);

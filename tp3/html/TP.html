@@ -1,0 +1,638 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>TP</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-11-24"><meta name="DC.source" content="TP.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Exercice 1: Restauration d&#8217;image</a></li><li><a href="#3">Exercice 2: Segmentation d&#8217;image</a></li><li><a href="#4">Exercice 3: Segmentation par couleur</a></li><li><a href="#5">Exercice 4: Toon/Paint shading</a></li></ul></div><pre class="codeinput">type <span class="string">Filtre_Canny.m</span>;
+type <span class="string">Calculer_Precision.m</span>;
+type <span class="string">ObtenirLUT.m</span>;
+type <span class="string">Segmenter_Couleur.m</span>;
+type <span class="string">Split_Couleurs.m</span>;
+</pre><pre class="codeoutput">
+function [ resultat ] = Filtre_Canny( image, masqueGaussien, treshold )
+    tresholdFaible = 1;
+
+    % 1- On doit lisser l'image pour r&eacute;duire le bruit afin de ne pas fausser
+    % le r&eacute;sultat de d&eacute;tection de contour
+    imageLisse = imfilter(image, masqueGaussien);
+
+    %2- On trouve le gradient, car Canny recherche les zones o&ugrave; la variation 
+    % de l'intensit&eacute; lumineuse est la plus importante
+    [Gmag,Gdir] = imgradient(imageLisse);
+
+    %3- On supprime les valeurs qui ne sont pas des maximums locaux. 
+    rows = size(image,1);
+    cols = size(image,2);
+
+    for row = 1:rows
+        for col = 1:cols
+            voisin1 = 0;
+            voisin2 = 0;
+            centre = Gmag(row,col);
+            direction = abs(Gdir(row,col)); %On veut seulement avoir &agrave; v&eacute;rifier 1 c&ocirc;t&eacute;
+
+            %Les angles utilis&eacute;s sont donn&eacute;s dans les notes de cours
+            %Sens direction vertical 
+            if(direction &lt;= 22.5 || direction &gt; 157.5)  
+                if(col &gt; 1)
+                    %Voisin gauche
+                    voisin1 = Gmag(row, col-1);
+                end
+                if(col &lt; cols)
+                    %Voisin droit
+                    voisin2 = Gmag(row, col+1);
+                end
+            end
+
+            %Sens direction horizontal 
+            if(direction &gt; 67.5 &amp;&amp; direction &lt;= 112.5) 
+                if(row &gt; 1)
+                    %Voisin bas
+                    voisin1 = Gmag(row-1, col);
+                end
+                if(row &lt; rows)
+                    %Voisin haut
+                    voisin2 = Gmag(row+1, col);
+                end
+            end
+
+            %Sens direction diagonal gauche droite 
+            if(direction &gt; 22.5 &amp;&amp; direction &lt;= 67.5)
+                if(row &gt; 1 &amp;&amp; col &lt; cols)
+                    %Voisin bas gauche
+                    voisin1 = Gmag(row-1, col+1);
+                end
+                if(row &lt; rows &amp;&amp; col &gt; 1)
+                    %Voisin haut droit
+                    voisin2 = Gmag(row+1, col-1);
+                end
+            end
+
+            %Sens direction diagonal droite gauche 
+            if(direction &gt; 112.5 &amp;&amp; direction &lt;= 157.5)  
+                if(row &gt; 1 &amp;&amp; col &gt; 1)
+                    %Voisin bas gauche
+                    voisin1 = Gmag(row-1, col-1);
+                end
+                if(row &lt; rows &amp;&amp; col &lt; cols)
+                    %Voisin haut droit
+                    voisin2 = Gmag(row+1, col+1);
+                end
+            end
+
+            %Finalement, on garde la valeur maximal du voisinage
+            if(centre &gt; voisin1 &amp;&amp; centre &gt; voisin2)
+                image(row,col) = centre;
+            else
+                image(row,col) = 0;
+            end
+        end
+    end
+
+
+    %4- Double seuillage: pour se d&eacute;barasser des potentiels faux contours, d&ucirc;s
+    %aux bruits restants ou variation de couleur, on utilise le double
+    %seuillage
+    %- tous les pixels superieurs au seuil maximal d&eacute;fini sont des contours 
+    %forts.
+    %- tous les pixels inf&eacute;rieurs au seuil minimal d&eacute;fini sont supprim&eacute;s.
+    %- tous les pixels situ&eacute;s entre ces deux valeurs sont consid&eacute;r&eacute;s comme des 
+    %contours faibles.
+    resultat = image &gt; treshold; %On garde les valeurs plus grandes que le seuil
+
+    %5- Detection de contour par hyst&eacute;r&eacute;sis: Si un contour faible est reli&eacute; 
+    %&agrave; un contour fort, il est ajout&eacute; &agrave; l'image finale. - Sinon le contour 
+    %faible est supprim&eacute;.
+    for row = 1:rows
+        for col = 1:cols
+           %On analyse seulement les contours faibles
+            if(image(row, col) &lt; treshold &amp;&amp; image(row, col) &gt; tresholdFaible)
+                if(row &gt; 1 &amp;&amp; row &lt; rows &amp;&amp; col &gt; 1 &amp;&amp; col &lt; cols)
+                    %Si le contour faible touche &agrave; un contour fort
+                    if(resultat(row-1, col) || resultat(row+1, col) || resultat(row, col-1) || resultat(row, col+1) || resultat(row-1, col-1) || resultat(row+1, col+1) || resultat(row-1, col+1) || resultat(row+1, col-1))
+                        %On le garde
+                        resultat(row, col) = 1;
+                    else
+                        %On le supprime
+                        resultat(row, col) = 0;
+                    end
+                end            
+            end
+        end
+    end    
+end
+
+function [Performance, TPF, TFN] = Calculer_Precision(image, imageReference)
+    resultat = image&amp;imageReference;
+
+    ContoursDetectes = sum(image(:));
+    ContoursReferences = sum(imageReference(:));
+    ContoursCorrects = sum(resultat(:));
+
+    FauxPositifs = ContoursDetectes - ContoursCorrects;
+    FauxNegatifs = ContoursReferences - ContoursCorrects;
+
+    Performance = ContoursCorrects/(ContoursCorrects+FauxPositifs+FauxNegatifs);
+    TPF = FauxPositifs/(ContoursCorrects+FauxPositifs+FauxNegatifs);
+    TFN = FauxNegatifs/(ContoursCorrects+FauxPositifs+FauxNegatifs);
+end
+
+function LUT = ObtenirLUT(nbSegments)
+    maxIntensity = 255;
+    % Tableau contenant les bornes inferieures et superieures de chaque
+    % segment (d'ou nbSegments+1)
+    delimiters = linspace(0,maxIntensity,nbSegments+1);
+    % Preallocation pour rapidite sur recommadation de notre ami matlab
+    avgValues = zeros(1,nbSegments);
+    for v = 1:numel(delimiters)
+        if v &lt; numel(delimiters)
+            % Calcul des valeurs moyennes
+            avgValues(v) = (delimiters(v)+delimiters(v+1))/2;
+        end
+    end
+    
+    preLUT = repelem(uint8(ceil(avgValues)),ceil(maxIntensity/nbSegments));
+    
+    % Il faut s'assurer que les LUT ont bien 256 valeurs
+    if numel(preLUT) &gt; 256
+        preLUT = preLUT(1:256);
+    elseif numel(preLUT) &lt; 256
+        nbElements = 256 - numel(preLUT);
+        suffix = ones(1,nbElements)*max(avgValues);
+        preLUT = [preLUT suffix];
+    end
+    
+    LUT = preLUT;
+end
+
+function segImg = Segmenter_Couleur(img,LUT_R,LUT_G,LUT_B)
+    % Extraire chaque couleur separement
+    [R,G,B] = Split_Couleurs(img);
+    
+    % Creer de nouvelles composantes selon les LUT transmises
+    R_seg = intlut(R,LUT_R);
+    G_seg = intlut(G,LUT_G);
+    B_seg = intlut(B,LUT_B);
+    
+    segImg = cat(3,R_seg,G_seg,B_seg);
+end
+
+function [R,G,B] = Split_Couleurs(img)
+    % Extraire chaque couleur separement
+    R = img(:,:,1);
+    G = img(:,:,2);
+    B = img(:,:,3);
+end
+</pre><h2>Exercice 1: Restauration d&#8217;image<a name="2"></a></h2><p>Numero 1</p><pre class="codeinput"><span class="comment">%Charger l'image</span>
+voiture = imread(<span class="string">'Formula_Ford.png'</span>);
+<span class="comment">%Afficher l'image</span>
+figure()
+imshow(voiture)
+title(<span class="string">'Image originale'</span>)
+
+<span class="comment">%Num&eacute;ro 2</span>
+<span class="comment">% h = fspecial('motion', len, theta): len = 30 et theta = 0 ce qui</span>
+<span class="comment">% &eacute;quivaut &agrave; une motion horizontal de 30 pixels</span>
+<span class="comment">% Les valeurs de 31 et 24 ont &eacute;t&eacute; obtenues par essai-erreur</span>
+h = fspecial(<span class="string">'motion'</span>, 31, 24);
+
+<span class="comment">%Num&eacute;ro 3</span>
+nouvelleImage = deconvwnr(voiture, h, 0);
+<span class="comment">%Afficher l'image</span>
+figure()
+imshow(nouvelleImage)
+title(<span class="string">'Filtre inverse'</span>)
+
+<span class="comment">% M&ecirc;me s'il est difficile de visualiser quoi que ce soit sur l'image</span>
+<span class="comment">% obtenue, on peut remarquer la silhouette de la voiture et l'impression</span>
+<span class="comment">% que nous avons est que le d&eacute;placement de 30pixels &agrave; &eacute;t&eacute; effectu&eacute; et</span>
+<span class="comment">% r&eacute;sulte en une s&eacute;rie de barre verticale. L'image poss&egrave;de beaucoup de</span>
+<span class="comment">% bruit et est probablement le r&eacute;sultat d'un param&egrave;tre qui n'est pas</span>
+<span class="comment">% ad&eacute;quat (voir K, comme K est le ratio du bruit et du signal, la valeur 0</span>
+<span class="comment">% n'est pas ad&eacute;quate, car il est faux de pr&eacute;tendre qu'il n'y a pas de</span>
+<span class="comment">% bruit dans l'image).</span>
+
+<span class="comment">%Num&eacute;ro 4</span>
+noise_var = 1e-3;
+I = im2double(voiture);
+estimated_nsr = noise_var / var(I(:));
+
+<span class="comment">%Num&eacute;ro 5</span>
+plaqueVisible = deconvwnr(voiture, h, estimated_nsr);
+<span class="comment">%Afficher l'image</span>
+figure()
+imshow(plaqueVisible)
+title(<span class="string">'Image plaque visible'</span>)
+<span class="comment">%Le num&eacute;ro de la plaque du criminel est FF12FMC</span>
+</pre><pre class="codeoutput">Warning: Image is too big to fit on screen; displaying at 67% 
+Warning: Image is too big to fit on screen; displaying at 67% 
+Warning: Image is too big to fit on screen; displaying at 67% 
+</pre><img vspace="5" hspace="5" src="TP_01.png" alt=""> <img vspace="5" hspace="5" src="TP_02.png" alt=""> <img vspace="5" hspace="5" src="TP_03.png" alt=""> <h2>Exercice 2: Segmentation d&#8217;image<a name="3"></a></h2><pre class="codeinput"><span class="comment">%Num&eacute;ro 1</span>
+<span class="comment">%Charger l'image</span>
+escalier = imread(<span class="string">'escaliers.jpg'</span>);
+<span class="comment">%Afficher l'image</span>
+figure()
+imshow(escalier)
+title(<span class="string">'Image escalier'</span>)
+
+<span class="comment">%Num&eacute;ro 2</span>
+gaussien = fspecial(<span class="string">'gaussian'</span>, 3, 0.5);
+resultat = Filtre_Canny(escalier, gaussien ,20);
+figure()
+imshow(resultat)
+title(<span class="string">'Image Filtre Canny'</span>)
+
+<span class="comment">%Num&eacute;ro 3</span>
+
+<span class="comment">%Num&eacute;ro 4</span>
+escalierReference = imread(<span class="string">'escaliers_TrueSeg.jpg'</span>) &gt; 128;
+resultat = Filtre_Canny(escalier, gaussien, 79);
+[Performance, TPF, TFN] = Calculer_Precision(resultat, escalierReference);
+
+<span class="comment">%On remarque en faisant varier le seuil que sa valeur optimale oscille</span>
+<span class="comment">%autour de 79. En effet, lors de notre premi&egrave;re utilisation du filtre</span>
+<span class="comment">%Canny, nous utlisions un seuil de 20 qui nous paraissait donner un</span>
+<span class="comment">%r&eacute;sultat convenable. Suite &agrave; l'analyse, nous avons passer d'une</span>
+<span class="comment">%performance de 19.41% &agrave; 27.26% en  passant d'une seuil de 20 &agrave; 79. Nous</span>
+<span class="comment">%acceptions ainsi trop de faux contours.</span>
+
+<span class="comment">% Numero 5</span>
+
+<span class="comment">% TODO</span>
+</pre><img vspace="5" hspace="5" src="TP_04.png" alt=""> <img vspace="5" hspace="5" src="TP_05.png" alt=""> <h2>Exercice 3: Segmentation par couleur<a name="4"></a></h2><pre class="codeinput"><span class="comment">% Numero 1</span>
+<span class="comment">%Charger l'image</span>
+figure();
+chateau = imread(<span class="string">'chateau.jpg'</span>);
+imshow(chateau);
+title(<span class="string">'Chateau original'</span>);
+<span class="comment">% Numero 2</span>
+<span class="comment">% Voir ObtenirLUT.m</span>
+
+<span class="comment">% Numero 3</span>
+<span class="comment">% Voir Segmenter_Couleur.m</span>
+
+<span class="comment">% Numero 4</span>
+LUT = ObtenirLUT(8);
+<span class="comment">% On utilise la meme LUT pour chaque couleur puisqu'il y a 8 segments pour</span>
+<span class="comment">% chaque couleur</span>
+chateau_seg = Segmenter_Couleur(chateau,LUT,LUT,LUT);
+figure();
+imshow(chateau_seg);
+title(<span class="string">'Chateau segmente'</span>);
+imwrite(chateau_seg,<span class="string">'chateau_seg.jpg'</span>);
+
+<span class="comment">%chateauComp = imread('imgCompare.png');</span>
+<span class="comment">%figure();</span>
+<span class="comment">%imshow(chateauComp);</span>
+<span class="comment">%title('Comparaison des formats d''image')</span>
+
+<span class="comment">% Considerant que l'image originale necessite 8 bits pour encoder chaque</span>
+<span class="comment">% couleur, donc 24 bits pour chaque pixel, ceci r&eacute;sulte donc en un espace</span>
+<span class="comment">% n&eacute;cessaire de 1920x1280x24bits = 58 982 400 bits. Or, pour l'image</span>
+<span class="comment">% segment&eacute;e, nous avons besoin de 3 bits par couleur, donc 9 bits par</span>
+<span class="comment">% pixels, ce qui fait donc un total de 22 118 400 bits. L'image segment&eacute;e</span>
+<span class="comment">% n&eacute;cessite donc 37.5% de la quantit&eacute; d'information n&eacute;cessaire pour</span>
+<span class="comment">% repr&eacute;senter l'image originale.</span>
+
+h = numel(chateau(:,1,1));
+w = numel(chateau(1,:,1));
+
+<span class="comment">% Numero 5</span>
+<span class="comment">% Tentative 2 seg bleus, 2 rouges, 2 verts</span>
+r = ObtenirLUT(2);
+g = ObtenirLUT(2);
+b = ObtenirLUT(2);
+chateau_tres_seg = Segmenter_Couleur(chateau,r,g,b);
+figure();
+imshow(chateau_tres_seg);
+title(<span class="string">'Image devinette'</span>);
+<span class="comment">% On peut voir qu'il n'y a que 2 niveaux de bleus, tres peu de niveaux de</span>
+<span class="comment">% rouge ainsi que tres peu de niveaux de vert. En essayant une segmentation</span>
+<span class="comment">% de 2 pour chaque couleur, nous obtenons donc l'effet voulu.</span>
+</pre><pre class="codeoutput">Warning: Image is too big to fit on screen; displaying at 33% 
+Warning: Image is too big to fit on screen; displaying at 33% 
+Warning: Image is too big to fit on screen; displaying at 33% 
+</pre><img vspace="5" hspace="5" src="TP_06.png" alt=""> <img vspace="5" hspace="5" src="TP_07.png" alt=""> <img vspace="5" hspace="5" src="TP_08.png" alt=""> <h2>Exercice 4: Toon/Paint shading<a name="5"></a></h2><pre class="codeinput"><span class="comment">% Numero 1</span>
+einstein = imread(<span class="string">'Albert-Einstein.jpg'</span>);
+figure();
+imshow(einstein);
+title(<span class="string">'Einstein original'</span>);
+
+<span class="comment">% Numero 2</span>
+<span class="comment">%lut5 = ObtenirLUT(5);</span>
+<span class="comment">% Test comme dans l'enonce</span>
+lut8 = ObtenirLUT(8);
+lut10 = ObtenirLUT(10);
+einstein5 = Segmenter_Couleur(einstein,lut10,lut8,lut8);
+figure();
+imshow(einstein5);
+title(<span class="string">'Einstein 10X8X8 segments'</span>);
+
+<span class="comment">% Numero 3</span>
+gauss = fspecial(<span class="string">'gaussian'</span>,[7 7],1);
+einstein5_gauss = convn(einstein5,gauss, <span class="string">'same'</span>);
+figure();
+imshow(uint8(einstein5_gauss));
+title(<span class="string">'Einstein 10X8X8 gauss&eacute;'</span>);
+
+<span class="comment">% Num&eacute;ro 4</span>
+[einsteinR, einsteinG, einsteinB] = Split_Couleurs(einstein5_gauss);
+
+threshold = 110;
+einsteinR_gauss = Filtre_Canny(einsteinR, gauss ,threshold);
+einsteinG_gauss = Filtre_Canny(einsteinG, gauss ,threshold);
+einsteinB_gauss = Filtre_Canny(einsteinB, gauss ,threshold);
+
+moy = (einsteinR_gauss + einsteinG_gauss + einsteinB_gauss)/3;
+figure();
+imshow(moy);
+title(<span class="string">'Contours'</span>);
+
+inverse = imcomplement(moy);
+figure();
+imshow(inverse);
+title(<span class="string">'Inverse contours'</span>);
+
+<span class="comment">% Numero 5</span>
+contours_gauss = conv2(inverse,gauss, <span class="string">'same'</span>);
+figure();
+imshow(contours_gauss);
+title(<span class="string">'Inverse contours gauss'</span>);
+
+<span class="comment">% Numero 6</span>
+einsteinR_fin = double(einsteinR).*double(contours_gauss);
+einsteinG_fin = double(einsteinG).*double(contours_gauss);
+einsteinB_fin = double(einsteinB).*double(contours_gauss);
+
+cartoonImg = cat(3,uint8(einsteinR_fin), uint8(einsteinG_fin), uint8(einsteinB_fin));
+figure();
+imshow(cartoonImg)
+title(<span class="string">'Image cartoon finale'</span>);
+</pre><pre class="codeoutput">Warning: Image is too big to fit on screen; displaying at 67% 
+Warning: Image is too big to fit on screen; displaying at 67% 
+Warning: Image is too big to fit on screen; displaying at 67% 
+Warning: Image is too big to fit on screen; displaying at 67% 
+Warning: Image is too big to fit on screen; displaying at 67% 
+Warning: Image is too big to fit on screen; displaying at 67% 
+Warning: Image is too big to fit on screen; displaying at 67% 
+</pre><img vspace="5" hspace="5" src="TP_09.png" alt=""> <img vspace="5" hspace="5" src="TP_10.png" alt=""> <img vspace="5" hspace="5" src="TP_11.png" alt=""> <img vspace="5" hspace="5" src="TP_12.png" alt=""> <img vspace="5" hspace="5" src="TP_13.png" alt=""> <img vspace="5" hspace="5" src="TP_14.png" alt=""> <img vspace="5" hspace="5" src="TP_15.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+type Filtre_Canny.m;
+type Calculer_Precision.m;
+type ObtenirLUT.m;
+type Segmenter_Couleur.m;
+type Split_Couleurs.m;
+%% Exercice 1: Restauration d’image
+% Numero 1
+%Charger l'image
+voiture = imread('Formula_Ford.png');
+%Afficher l'image
+figure()
+imshow(voiture)
+title('Image originale')
+
+%Numéro 2
+% h = fspecial('motion', len, theta): len = 30 et theta = 0 ce qui
+% équivaut à une motion horizontal de 30 pixels
+% Les valeurs de 31 et 24 ont été obtenues par essai-erreur
+h = fspecial('motion', 31, 24);
+
+%Numéro 3
+nouvelleImage = deconvwnr(voiture, h, 0);
+%Afficher l'image
+figure()
+imshow(nouvelleImage)
+title('Filtre inverse')
+
+% Même s'il est difficile de visualiser quoi que ce soit sur l'image
+% obtenue, on peut remarquer la silhouette de la voiture et l'impression
+% que nous avons est que le déplacement de 30pixels à été effectué et
+% résulte en une série de barre verticale. L'image possède beaucoup de
+% bruit et est probablement le résultat d'un paramètre qui n'est pas
+% adéquat (voir K, comme K est le ratio du bruit et du signal, la valeur 0
+% n'est pas adéquate, car il est faux de prétendre qu'il n'y a pas de
+% bruit dans l'image).  
+
+%Numéro 4
+noise_var = 1e-3;
+I = im2double(voiture);
+estimated_nsr = noise_var / var(I(:));
+
+%Numéro 5
+plaqueVisible = deconvwnr(voiture, h, estimated_nsr);
+%Afficher l'image
+figure()
+imshow(plaqueVisible)
+title('Image plaque visible')
+%Le numéro de la plaque du criminel est FF12FMC
+
+%% Exercice 2: Segmentation d’image
+%Numéro 1
+%Charger l'image
+escalier = imread('escaliers.jpg');
+%Afficher l'image
+figure()
+imshow(escalier)
+title('Image escalier')
+
+%Numéro 2
+gaussien = fspecial('gaussian', 3, 0.5);
+resultat = Filtre_Canny(escalier, gaussien ,20);
+figure()
+imshow(resultat)
+title('Image Filtre Canny')
+
+%Numéro 3
+
+%Numéro 4
+escalierReference = imread('escaliers_TrueSeg.jpg') > 128;
+resultat = Filtre_Canny(escalier, gaussien, 79);
+[Performance, TPF, TFN] = Calculer_Precision(resultat, escalierReference);
+
+%On remarque en faisant varier le seuil que sa valeur optimale oscille
+%autour de 79. En effet, lors de notre première utilisation du filtre
+%Canny, nous utlisions un seuil de 20 qui nous paraissait donner un
+%résultat convenable. Suite à l'analyse, nous avons passer d'une
+%performance de 19.41% à 27.26% en  passant d'une seuil de 20 à 79. Nous
+%acceptions ainsi trop de faux contours.
+
+% Numero 5
+
+% TODO
+
+%% Exercice 3: Segmentation par couleur
+
+% Numero 1
+%Charger l'image
+figure();
+chateau = imread('chateau.jpg');
+imshow(chateau);
+title('Chateau original');
+% Numero 2
+% Voir ObtenirLUT.m
+
+% Numero 3
+% Voir Segmenter_Couleur.m
+
+% Numero 4
+LUT = ObtenirLUT(8);
+% On utilise la meme LUT pour chaque couleur puisqu'il y a 8 segments pour
+% chaque couleur
+chateau_seg = Segmenter_Couleur(chateau,LUT,LUT,LUT);
+figure();
+imshow(chateau_seg);
+title('Chateau segmente');
+imwrite(chateau_seg,'chateau_seg.jpg');
+
+%chateauComp = imread('imgCompare.png');
+%figure();
+%imshow(chateauComp);
+%title('Comparaison des formats d''image')
+
+% Considerant que l'image originale necessite 8 bits pour encoder chaque
+% couleur, donc 24 bits pour chaque pixel, ceci résulte donc en un espace
+% nécessaire de 1920x1280x24bits = 58 982 400 bits. Or, pour l'image
+% segmentée, nous avons besoin de 3 bits par couleur, donc 9 bits par
+% pixels, ce qui fait donc un total de 22 118 400 bits. L'image segmentée
+% nécessite donc 37.5% de la quantité d'information nécessaire pour
+% représenter l'image originale.
+
+h = numel(chateau(:,1,1));
+w = numel(chateau(1,:,1));
+
+% Numero 5
+% Tentative 2 seg bleus, 2 rouges, 2 verts
+r = ObtenirLUT(2);
+g = ObtenirLUT(2);
+b = ObtenirLUT(2);
+chateau_tres_seg = Segmenter_Couleur(chateau,r,g,b);
+figure();
+imshow(chateau_tres_seg);
+title('Image devinette');
+% On peut voir qu'il n'y a que 2 niveaux de bleus, tres peu de niveaux de
+% rouge ainsi que tres peu de niveaux de vert. En essayant une segmentation
+% de 2 pour chaque couleur, nous obtenons donc l'effet voulu.
+
+%% Exercice 4: Toon/Paint shading
+
+% Numero 1
+einstein = imread('Albert-Einstein.jpg');
+figure();
+imshow(einstein);
+title('Einstein original');
+
+% Numero 2
+%lut5 = ObtenirLUT(5);
+% Test comme dans l'enonce
+lut8 = ObtenirLUT(8);
+lut10 = ObtenirLUT(10);
+einstein5 = Segmenter_Couleur(einstein,lut10,lut8,lut8);
+figure();
+imshow(einstein5);
+title('Einstein 10X8X8 segments');
+
+% Numero 3
+gauss = fspecial('gaussian',[7 7],1);
+einstein5_gauss = convn(einstein5,gauss, 'same');
+figure();
+imshow(uint8(einstein5_gauss));
+title('Einstein 10X8X8 gaussé');
+
+% Numéro 4
+[einsteinR, einsteinG, einsteinB] = Split_Couleurs(einstein5_gauss);
+
+threshold = 110;
+einsteinR_gauss = Filtre_Canny(einsteinR, gauss ,threshold);
+einsteinG_gauss = Filtre_Canny(einsteinG, gauss ,threshold);
+einsteinB_gauss = Filtre_Canny(einsteinB, gauss ,threshold);
+
+moy = (einsteinR_gauss + einsteinG_gauss + einsteinB_gauss)/3;
+figure();
+imshow(moy);
+title('Contours');
+
+inverse = imcomplement(moy);
+figure();
+imshow(inverse);
+title('Inverse contours');
+
+% Numero 5
+contours_gauss = conv2(inverse,gauss, 'same');
+figure();
+imshow(contours_gauss);
+title('Inverse contours gauss');
+
+% Numero 6
+einsteinR_fin = double(einsteinR).*double(contours_gauss);
+einsteinG_fin = double(einsteinG).*double(contours_gauss);
+einsteinB_fin = double(einsteinB).*double(contours_gauss);
+
+cartoonImg = cat(3,uint8(einsteinR_fin), uint8(einsteinG_fin), uint8(einsteinB_fin));
+figure();
+imshow(cartoonImg)
+title('Image cartoon finale');
+##### SOURCE END #####
+--></body></html>

@@ -2,6 +2,7 @@ type Filtre_Canny.m;
 type Calculer_Precision.m;
 type ObtenirLUT.m;
 type Segmenter_Couleur.m;
+type Split_Couleurs.m;
 %% Exercice 1: Restauration d’image
 % Numero 1
 %Charger l'image
@@ -80,7 +81,7 @@ resultat = Filtre_Canny(escalier, gaussien, 79);
 
 % TODO
 
-%% Exercice 3
+%% Exercice 3: Segmentation par couleur
 
 % Numero 1
 %Charger l'image
@@ -99,16 +100,26 @@ LUT = ObtenirLUT(8);
 % On utilise la meme LUT pour chaque couleur puisqu'il y a 8 segments pour
 % chaque couleur
 chateau_seg = Segmenter_Couleur(chateau,LUT,LUT,LUT);
+figure();
 imshow(chateau_seg);
 title('Chateau segmente');
 imwrite(chateau_seg,'chateau_seg.jpg');
 
-chateauComp = imread('imgCompare.png');
-figure();
-imshow(chateauComp);
-title('Comparaison des formats d''image')
-% On peut voir sur l'image de comparaison que l'image segmentee est 45 056
-% bytes plus petite
+%chateauComp = imread('imgCompare.png');
+%figure();
+%imshow(chateauComp);
+%title('Comparaison des formats d''image')
+
+% Considerant que l'image originale necessite 8 bits pour encoder chaque
+% couleur, donc 24 bits pour chaque pixel, ceci résulte donc en un espace
+% nécessaire de 1920x1280x24bits = 58 982 400 bits. Or, pour l'image
+% segmentée, nous avons besoin de 3 bits par couleur, donc 9 bits par
+% pixels, ce qui fait donc un total de 22 118 400 bits. L'image segmentée
+% nécessite donc 37.5% de la quantité d'information nécessaire pour
+% représenter l'image originale.
+
+h = numel(chateau(:,1,1));
+w = numel(chateau(1,:,1));
 
 % Numero 5
 % Tentative 2 seg bleus, 2 rouges, 2 verts
@@ -116,8 +127,68 @@ r = ObtenirLUT(2);
 g = ObtenirLUT(2);
 b = ObtenirLUT(2);
 chateau_tres_seg = Segmenter_Couleur(chateau,r,g,b);
+figure();
 imshow(chateau_tres_seg);
+title('Image devinette');
 % On peut voir qu'il n'y a que 2 niveaux de bleus, tres peu de niveaux de
 % rouge ainsi que tres peu de niveaux de vert. En essayant une segmentation
 % de 2 pour chaque couleur, nous obtenons donc l'effet voulu.
 
+%% Exercice 4: Toon/Paint shading
+
+% Numero 1
+einstein = imread('Albert-Einstein.jpg');
+figure();
+imshow(einstein);
+title('Einstein original');
+
+% Numero 2
+%lut5 = ObtenirLUT(5);
+% Test comme dans l'enonce
+lut8 = ObtenirLUT(8);
+lut10 = ObtenirLUT(10);
+einstein5 = Segmenter_Couleur(einstein,lut10,lut8,lut8);
+figure();
+imshow(einstein5);
+title('Einstein 10X8X8 segments');
+
+% Numero 3
+gauss = fspecial('gaussian',[7 7],1);
+einstein5_gauss = convn(einstein5,gauss, 'same');
+figure();
+imshow(uint8(einstein5_gauss));
+title('Einstein 10X8X8 gaussé');
+
+% Numéro 4
+[einsteinR, einsteinG, einsteinB] = Split_Couleurs(einstein5_gauss);
+
+threshold = 110;
+einsteinR_gauss = Filtre_Canny(einsteinR, gauss ,threshold);
+einsteinG_gauss = Filtre_Canny(einsteinG, gauss ,threshold);
+einsteinB_gauss = Filtre_Canny(einsteinB, gauss ,threshold);
+
+moy = (einsteinR_gauss + einsteinG_gauss + einsteinB_gauss)/3;
+figure();
+imshow(moy);
+title('Contours');
+
+inverse = imcomplement(moy);
+figure();
+imshow(inverse);
+title('Inverse contours');
+
+% Numero 5
+contours_gauss = conv2(inverse,gauss, 'same');
+figure();
+imshow(contours_gauss);
+title('Inverse contours gauss');
+
+% Numero 6
+einsteinR_fin = double(einsteinR).*double(contours_gauss);
+einsteinG_fin = double(einsteinG).*double(contours_gauss);
+einsteinB_fin = double(einsteinB).*double(contours_gauss);
+
+cartoonImg = cat(3,uint8(einsteinR_fin), uint8(einsteinG_fin), uint8(einsteinB_fin));
+figure();
+imshow(cartoonImg)
+title('Image cartoon finale');
