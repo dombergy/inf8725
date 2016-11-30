@@ -64,6 +64,7 @@ imshow(resultat)
 title('Image Filtre Canny')
 
 %Numéro 3
+% Voir Calculer_Precision.m
 
 %Numéro 4
 escalierReference = imread('escaliers_TrueSeg.jpg') > 128;
@@ -77,9 +78,21 @@ resultat = Filtre_Canny(escalier, gaussien, 79);
 %performance de 19.41% à 27.26% en  passant d'une seuil de 20 à 79. Nous
 %acceptions ainsi trop de faux contours.
 
-% Numero 5
+%Numéro 5
+escalier = imread('escaliers.jpg');
+gaussien = fspecial('gaussian', 3, 0.5);
+BW = Filtre_Canny(escalier, gaussien ,20);
+[H,theta,rho] = hough(BW,'Theta', -1:0.5:1);
+P = houghpeaks(H,5,'threshold',ceil(0.3*max(H(:))));
 
-% TODO
+lines = houghlines(BW,theta,rho,P,'FillGap',5,'MinLength',7);
+
+figure, imshow(escalier), hold on
+max_len = 0;
+for k = 1:length(lines)
+   xy = [lines(k).point1; lines(k).point2];
+   plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','yellow');
+end
 
 %% Exercice 3: Segmentation par couleur
 

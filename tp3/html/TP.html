@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>TP</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-11-24"><meta name="DC.source" content="TP.m"><style type="text/css">
+      --><title>TP</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-11-30"><meta name="DC.source" content="TP.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -306,6 +306,7 @@ imshow(resultat)
 title(<span class="string">'Image Filtre Canny'</span>)
 
 <span class="comment">%Num&eacute;ro 3</span>
+<span class="comment">% Voir Calculer_Precision.m</span>
 
 <span class="comment">%Num&eacute;ro 4</span>
 escalierReference = imread(<span class="string">'escaliers_TrueSeg.jpg'</span>) &gt; 128;
@@ -319,10 +320,22 @@ resultat = Filtre_Canny(escalier, gaussien, 79);
 <span class="comment">%performance de 19.41% &agrave; 27.26% en  passant d'une seuil de 20 &agrave; 79. Nous</span>
 <span class="comment">%acceptions ainsi trop de faux contours.</span>
 
-<span class="comment">% Numero 5</span>
+<span class="comment">%Num&eacute;ro 5</span>
+escalier = imread(<span class="string">'escaliers.jpg'</span>);
+gaussien = fspecial(<span class="string">'gaussian'</span>, 3, 0.5);
+BW = Filtre_Canny(escalier, gaussien ,20);
+[H,theta,rho] = hough(BW,<span class="string">'Theta'</span>, -1:0.5:1);
+P = houghpeaks(H,5,<span class="string">'threshold'</span>,ceil(0.3*max(H(:))));
 
-<span class="comment">% TODO</span>
-</pre><img vspace="5" hspace="5" src="TP_04.png" alt=""> <img vspace="5" hspace="5" src="TP_05.png" alt=""> <h2>Exercice 3: Segmentation par couleur<a name="4"></a></h2><pre class="codeinput"><span class="comment">% Numero 1</span>
+lines = houghlines(BW,theta,rho,P,<span class="string">'FillGap'</span>,5,<span class="string">'MinLength'</span>,7);
+
+figure, imshow(escalier), hold <span class="string">on</span>
+max_len = 0;
+<span class="keyword">for</span> k = 1:length(lines)
+   xy = [lines(k).point1; lines(k).point2];
+   plot(xy(:,1),xy(:,2),<span class="string">'LineWidth'</span>,2,<span class="string">'Color'</span>,<span class="string">'yellow'</span>);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="TP_04.png" alt=""> <img vspace="5" hspace="5" src="TP_05.png" alt=""> <img vspace="5" hspace="5" src="TP_06.png" alt=""> <h2>Exercice 3: Segmentation par couleur<a name="4"></a></h2><pre class="codeinput"><span class="comment">% Numero 1</span>
 <span class="comment">%Charger l'image</span>
 figure();
 chateau = imread(<span class="string">'chateau.jpg'</span>);
@@ -375,7 +388,7 @@ title(<span class="string">'Image devinette'</span>);
 </pre><pre class="codeoutput">Warning: Image is too big to fit on screen; displaying at 33% 
 Warning: Image is too big to fit on screen; displaying at 33% 
 Warning: Image is too big to fit on screen; displaying at 33% 
-</pre><img vspace="5" hspace="5" src="TP_06.png" alt=""> <img vspace="5" hspace="5" src="TP_07.png" alt=""> <img vspace="5" hspace="5" src="TP_08.png" alt=""> <h2>Exercice 4: Toon/Paint shading<a name="5"></a></h2><pre class="codeinput"><span class="comment">% Numero 1</span>
+</pre><img vspace="5" hspace="5" src="TP_07.png" alt=""> <img vspace="5" hspace="5" src="TP_08.png" alt=""> <img vspace="5" hspace="5" src="TP_09.png" alt=""> <h2>Exercice 4: Toon/Paint shading<a name="5"></a></h2><pre class="codeinput"><span class="comment">% Numero 1</span>
 einstein = imread(<span class="string">'Albert-Einstein.jpg'</span>);
 figure();
 imshow(einstein);
@@ -438,7 +451,7 @@ Warning: Image is too big to fit on screen; displaying at 67%
 Warning: Image is too big to fit on screen; displaying at 67% 
 Warning: Image is too big to fit on screen; displaying at 67% 
 Warning: Image is too big to fit on screen; displaying at 67% 
-</pre><img vspace="5" hspace="5" src="TP_09.png" alt=""> <img vspace="5" hspace="5" src="TP_10.png" alt=""> <img vspace="5" hspace="5" src="TP_11.png" alt=""> <img vspace="5" hspace="5" src="TP_12.png" alt=""> <img vspace="5" hspace="5" src="TP_13.png" alt=""> <img vspace="5" hspace="5" src="TP_14.png" alt=""> <img vspace="5" hspace="5" src="TP_15.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="TP_10.png" alt=""> <img vspace="5" hspace="5" src="TP_11.png" alt=""> <img vspace="5" hspace="5" src="TP_12.png" alt=""> <img vspace="5" hspace="5" src="TP_13.png" alt=""> <img vspace="5" hspace="5" src="TP_14.png" alt=""> <img vspace="5" hspace="5" src="TP_15.png" alt=""> <img vspace="5" hspace="5" src="TP_16.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 type Filtre_Canny.m;
 type Calculer_Precision.m;
@@ -506,6 +519,7 @@ imshow(resultat)
 title('Image Filtre Canny')
 
 %Numéro 3
+% Voir Calculer_Precision.m
 
 %Numéro 4
 escalierReference = imread('escaliers_TrueSeg.jpg') > 128;
@@ -519,9 +533,21 @@ resultat = Filtre_Canny(escalier, gaussien, 79);
 %performance de 19.41% à 27.26% en  passant d'une seuil de 20 à 79. Nous
 %acceptions ainsi trop de faux contours.
 
-% Numero 5
+%Numéro 5
+escalier = imread('escaliers.jpg');
+gaussien = fspecial('gaussian', 3, 0.5);
+BW = Filtre_Canny(escalier, gaussien ,20);
+[H,theta,rho] = hough(BW,'Theta', -1:0.5:1);
+P = houghpeaks(H,5,'threshold',ceil(0.3*max(H(:))));
 
-% TODO
+lines = houghlines(BW,theta,rho,P,'FillGap',5,'MinLength',7);
+
+figure, imshow(escalier), hold on
+max_len = 0;
+for k = 1:length(lines)
+   xy = [lines(k).point1; lines(k).point2];
+   plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','yellow');
+end
 
 %% Exercice 3: Segmentation par couleur
 
